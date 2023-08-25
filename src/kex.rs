@@ -32,3 +32,67 @@ pub fn keyGen() -> ([u8; PK_BYTES], [u8; SK_BYTES])
 
     (pk, sk)
 }
+
+
+pub fn encryption(pk: &[u8], m: &[u8], rc: &[u8]) -> [u8; CIPHERTEXTBYTES]
+{
+    let mut c = [0u8; CIPHERTEXTBYTES];
+    let mut t = VecPoly::<K>::default();
+    let mut rho = [0u8; 32];
+
+    unpack_pk(&pk, &mut t, &mut rho);
+
+    let mut A = get_matrix(&mut rho);
+    // A = A.T (transpot)
+
+    let mut n = 0;
+    let mut r = VecPoly::<K>::default();
+    for i in 0..K
+    {
+        let mut tmp = [0u8; 32];
+        let mut seed = [0u8; 32+2];
+        seed[..32].copy_from_slice(&rc[..32]);
+        seed[32..].copy_from_slice(&[n as u8, (n>>8) as u8]);
+        prf(&seed, &mut tmp);
+        r.poly[i] = CBD(&tmp, ETA1);
+        n+=1;
+    }
+    let mut e1 = VecPoly::<K>::default();
+    for i in 0..K
+    {
+        let mut tmp = [0u8; 32];
+        let mut seed = [0u8; 32+2];
+        seed[..32].copy_from_slice(&rc[..32]);
+        seed[32..].copy_from_slice(&[n as u8, (n>>8) as u8]);
+        prf(&seed, &mut tmp);
+        e1.poly[i] = CBD(&tmp, ETA2);
+        n+=1;
+    }
+    let mut tmp = [0u8; 32];
+    let mut seed = [0u8; 32+2];
+    seed[..32].copy_from_slice(&rc[..32]);
+    seed[32..].copy_from_slice(&[n as u8, (n>>8) as u8]);
+    prf(&seed, &mut tmp);
+    let e2 = CBD(&tmp, ETA2);
+
+    r = Ntt(&r);
+    let mut u = inv_Ntt(&m_mult_v(&A, &Ntt(&r)));
+    u = v_add(&u, &e1);
+
+    let mut v = inv_ntt(&v_mult_v(&t, &r)); 
+    add(&mut v, &e2);
+
+    let mut tmp = Poly::default();
+    decode(&mut tmp, m);
+    tmp = decompress(&tmp, 1);
+    
+    add(&mut v, &tmp);
+
+
+    let mut tmp = Compress(&u, Du as i16);
+    Encode(&mut c, tmp, Du);
+    let mut tmp = compress(&v, Dv as i16);
+    encode(&mut c[CIPHERTEXTBYTES/2..], tmp);
+
+    c
+}

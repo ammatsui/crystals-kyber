@@ -281,6 +281,7 @@ pub fn v_mult_v<const k:usize>(v: &VecPoly<{k}>, u: &VecPoly<{k}>) -> Poly
 }
 
 
+
 /* matrix and vector multiplication */
 pub fn m_mult_v<const k:usize, const l:usize>(A: &Mat<{k}, {l}>, s: &VecPoly<{l}>) -> VecPoly<{k}>
 {
@@ -337,5 +338,26 @@ pub fn decompress(r: &Poly, d: i16) -> Poly
         t.coeff[i] = _decompress(r.coeff[i], d);
     }
     t.ntt = r.ntt;
+    t
+}
+
+pub fn Compress(r: &VecPoly<K>, d: i16) -> VecPoly<K>
+{
+    let mut t = VecPoly::<K>::default();
+    for i in 0..r.poly.len()
+    {
+        t.poly[i] = compress(&r.poly[i], d);
+    }
+    t
+}
+
+
+pub fn Decompress(r: &VecPoly<K>, d: i16) -> VecPoly<K>
+{
+    let mut t = VecPoly::<K>::default();
+    for i in 0..r.poly.len()
+    {
+        t.poly[i] = decompress(&r.poly[i], d);
+    }
     t
 }

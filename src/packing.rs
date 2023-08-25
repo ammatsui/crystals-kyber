@@ -28,6 +28,23 @@ pub fn decode(r: &mut Poly, a: &[u8]) {
     }
 }
 
+pub fn Encode(r: &mut [u8], a: VecPoly<K>, d: usize) 
+{
+    for i in 0..K 
+    {
+        encode(&mut r[ i * d..], a.poly[i]);
+    }
+}
+
+
+/* decode */
+pub fn Decode(r: &mut VecPoly<K>, a: &[u8], d: usize) {
+    for i in 0..K 
+    {
+        decode( &mut r.poly[i], &a[i * d..],);
+    }
+}
+
 
 /* main packers */
 /* secret key sk = (s)*/
