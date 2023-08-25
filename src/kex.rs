@@ -96,3 +96,43 @@ pub fn encryption(pk: &[u8], m: &[u8], rc: &[u8]) -> [u8; CIPHERTEXTBYTES]
 
     c
 }
+
+
+pub fn decryption(sk: &[u8], c: &[u8]) -> [u8; MESSAGEBYTES]
+{
+    let mut m = [0u8; MESSAGEBYTES];
+
+    let mut tmp = VecPoly::<K>::default();
+    Decode(&mut tmp, c, Du);
+    let u = Decompress(&mut tmp, Du as i16);
+
+    let mut tmp = Poly::default();
+    decode(&mut tmp, c);//+Du *K*N/8);//, Du);
+    let mut v = decompress(&mut tmp, Du as i16);
+
+    let mut s = VecPoly::<K>::default();
+    unpack_sk(sk, &mut s);
+
+
+    let su = inv_ntt(&v_mult_v(&s, &Ntt(&u)));
+    let su = neg(&su);
+    add(&mut v, &su);
+
+    let tmp = compress(&v, 1);
+    encode(&mut m, tmp);
+
+    // # Split ciphertext to vectors
+    // index = self.du * self.k * self.R.n // 8
+    // c2 = c[index:]
+    
+    // # Recover the vector u and convert to NTT form
+    // u = self.M.decode(c, self.k, 1, l=self.du).decompress(self.du)
+    // u.to_ntt()
+    
+    // # Recover the polynomial v
+    // v = self.R.decode(c2, l=self.dv).decompress(self.dv)
+
+
+
+    m
+}

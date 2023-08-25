@@ -14,7 +14,7 @@ pub use mode1024::*;
 
 
 
-pub const MESSAGE: usize = 32; //max size of the message
+pub const MESSAGEBYTES: usize = 32; //max size of the message
 
 
 pub const Q: usize = 3329; 
