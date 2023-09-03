@@ -314,6 +314,7 @@ pub fn _addq(a: &Poly) -> Poly
     {
         if a.coeff[i] < 0 {
         res.coeff[i] = a.coeff[i] + (Q as i16);}
+        else {res.coeff[i] = a.coeff[i];}
     }
     res.ntt = a.ntt;
     res
