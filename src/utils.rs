@@ -5,15 +5,16 @@ use crate::params::*;
 const Q_INV: i32 = 62209; // q^(-1) mod 2^16
 
 
-/* for finite field element a with -2^{31}Q <= a <= Q*2^31,
- compute a' = a*2^{-32} (mod Q) such that -Q < a' < Q.
+/* for finite field element a with -2^{15}Q <= a <= Q*2^15,
+ compute a' = a*2^{-16} (mod Q) such that -Q < a' < Q.
  https://en.wikipedia.org/wiki/Montgomery_modular_multiplication#The_REDC_algorithm
- here R = 2^32 */
+ here R = 2^16 */
 pub fn montgomery(a: i32) -> i16
 {
     let mut m = (a.wrapping_mul(Q_INV) as i16) as i32; 
     // a.wrapping_mul(b:T) returns (a * b) mod 2N, where N is the width of T in bits.
     m = (a - m * (Q as i32)) >> 16;
+    assert!((m as i16) < Q as i16);
     m as i16
 }
 
