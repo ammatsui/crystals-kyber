@@ -11,10 +11,18 @@ const Q_INV: i32 = 62209; // q^(-1) mod 2^16
  here R = 2^32 */
 pub fn montgomery(a: i32) -> i16
 {
-    let mut m = a.wrapping_mul(Q_INV); 
+    let mut m = (a.wrapping_mul(Q_INV) as i16) as i32; 
     // a.wrapping_mul(b:T) returns (a * b) mod 2N, where N is the width of T in bits.
-    m = (a as i32 - m * Q as i32) >> 16;
+    m = (a - m * (Q as i32)) >> 16;
     m as i16
+}
+
+pub fn barrett(a: i16) -> i16 {
+    let v = ((1u32 << 26) / Q as u32 + 1) as i32;
+    let mut t = v * a as i32 + (1 << 25);
+    t >>= 26;
+    t *= Q as i32;
+    a - t as i16
 }
 
 

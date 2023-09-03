@@ -27,7 +27,11 @@ pub fn keyGen() -> ([u8; PK_BYTES], [u8; SK_BYTES])
     let mut t: VecPoly<K> = m_mult_v(&A, &Ntt(&s));
     t = v_add(&t, &e);
 
+    t = addq(&t);
+    s = addq(&s);
+
     pack_pk(&mut pk, &t, &rho);
+    println!("packed pk");
     pack_sk(&mut sk, &s);
 
     (pk, sk)
@@ -40,6 +44,8 @@ pub fn encryption(pk: &[u8], m: &[u8], rc: &[u8]) -> [u8; CIPHERTEXTBYTES]
     let mut t = VecPoly::<K>::default();
     let mut rho = [0u8; 32];
 
+
+
     unpack_pk(&pk, &mut t, &mut rho);
 
     let mut A = get_matrix(&mut rho);
@@ -49,7 +55,7 @@ pub fn encryption(pk: &[u8], m: &[u8], rc: &[u8]) -> [u8; CIPHERTEXTBYTES]
     let mut r = VecPoly::<K>::default();
     for i in 0..K
     {
-        let mut tmp = [0u8; 32];
+        let mut tmp = [0u8; 64*ETA1];
         let mut seed = [0u8; 32+2];
         seed[..32].copy_from_slice(&rc[..32]);
         seed[32..].copy_from_slice(&[n as u8, (n>>8) as u8]);
@@ -60,7 +66,7 @@ pub fn encryption(pk: &[u8], m: &[u8], rc: &[u8]) -> [u8; CIPHERTEXTBYTES]
     let mut e1 = VecPoly::<K>::default();
     for i in 0..K
     {
-        let mut tmp = [0u8; 32];
+        let mut tmp = [0u8; 64*ETA2];
         let mut seed = [0u8; 32+2];
         seed[..32].copy_from_slice(&rc[..32]);
         seed[32..].copy_from_slice(&[n as u8, (n>>8) as u8]);
@@ -68,7 +74,7 @@ pub fn encryption(pk: &[u8], m: &[u8], rc: &[u8]) -> [u8; CIPHERTEXTBYTES]
         e1.poly[i] = CBD(&tmp, ETA2);
         n+=1;
     }
-    let mut tmp = [0u8; 32];
+    let mut tmp = [0u8; 64*ETA2];
     let mut seed = [0u8; 32+2];
     seed[..32].copy_from_slice(&rc[..32]);
     seed[32..].copy_from_slice(&[n as u8, (n>>8) as u8]);
@@ -83,7 +89,7 @@ pub fn encryption(pk: &[u8], m: &[u8], rc: &[u8]) -> [u8; CIPHERTEXTBYTES]
     add(&mut v, &e2);
 
     let mut tmp = Poly::default();
-    decode(&mut tmp, m);
+    decode(&mut tmp, m, 1);
     tmp = decompress(&tmp, 1);
     
     add(&mut v, &tmp);
@@ -92,7 +98,7 @@ pub fn encryption(pk: &[u8], m: &[u8], rc: &[u8]) -> [u8; CIPHERTEXTBYTES]
     let mut tmp = Compress(&u, Du as i16);
     Encode(&mut c, tmp, Du);
     let mut tmp = compress(&v, Dv as i16);
-    encode(&mut c[CIPHERTEXTBYTES/2..], tmp);
+    encode(&mut c[CIPHERTEXTBYTES/2..], tmp, Dv);
 
     c
 }
@@ -107,8 +113,8 @@ pub fn decryption(sk: &[u8], c: &[u8]) -> [u8; MESSAGEBYTES]
     let u = Decompress(&mut tmp, Du as i16);
 
     let mut tmp = Poly::default();
-    decode(&mut tmp, c);//+Du *K*N/8);//, Du);
-    let mut v = decompress(&mut tmp, Du as i16);
+    decode(&mut tmp, &c[Du*K*N/8..], Dv);
+    let mut v = decompress(&mut tmp, Dv as i16);
 
     let mut s = VecPoly::<K>::default();
     unpack_sk(sk, &mut s);
@@ -119,20 +125,7 @@ pub fn decryption(sk: &[u8], c: &[u8]) -> [u8; MESSAGEBYTES]
     add(&mut v, &su);
 
     let tmp = compress(&v, 1);
-    encode(&mut m, tmp);
-
-    // # Split ciphertext to vectors
-    // index = self.du * self.k * self.R.n // 8
-    // c2 = c[index:]
-    
-    // # Recover the vector u and convert to NTT form
-    // u = self.M.decode(c, self.k, 1, l=self.du).decompress(self.du)
-    // u.to_ntt()
-    
-    // # Recover the polynomial v
-    // v = self.R.decode(c2, l=self.dv).decompress(self.dv)
-
-
+    encode(&mut m, tmp, 1);
 
     m
 }

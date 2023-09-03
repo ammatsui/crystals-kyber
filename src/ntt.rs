@@ -1,4 +1,4 @@
-use crate::{params::*, utils::montgomery};
+use crate::{params::*, utils::*};
 /* ntt library: forward, inverse,  multiplication */
 
 /* roots of unity in order for the forward ntt */
@@ -23,7 +23,7 @@ output in bit-reversed order */
     let mut len = N/2; //128
     let (mut t, mut zeta);
   
-    while len > 0 {
+    while len >= 2 {
       let mut i = 0;
       while i < N {
         k += 1;
@@ -46,12 +46,12 @@ output in bit-reversed order */
 pub fn inv_ntt_(a: &mut [i16])
 {
     let mut j;
-    let mut k = N;
-    let mut len = 1;
+    let mut k = N/2;
+    let mut len = 2;
     let (mut t, mut zeta);
     const F: i32 = 1441; // mont^2/256
   
-    while len < N/2 {
+    while len <= N/2 {
       let mut i = 0;
       while i < 256 {
         k -= 1;
@@ -59,7 +59,7 @@ pub fn inv_ntt_(a: &mut [i16])
         j = i;
         while j < (i + len) {
           t = a[j];
-          a[j] = t + a[j + len];
+          a[j] = barrett(t + a[j + len]);
           a[j + len] = t - a[j + len];
           a[j + len] = montgomery(zeta * a[j + len] as i32);
           j += 1

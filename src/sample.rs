@@ -47,9 +47,9 @@ pub fn parse(b: &[u8]) -> Poly
     let mut j: usize = 0;
     while j < N 
     {
-        let mut d: i16 = (b[i] as i16) + 256*(b[i+1] as i16);
+        let mut d: i16 = (b[i] as i16) + 256*(cmod(b[i+1] as i16, 16));
         d = cmod(d, 1<<13);
-        if d < 19*Q as i16
+        if (d as usize) < 19*Q
         {
             res.coeff[j] = d;
             j += 1;
@@ -118,7 +118,7 @@ pub fn CBD(b: &[u8], ETA: usize) -> Poly
     {
         cbd2(&mut res, b);
     }
-    cbd3(&mut res, b);
+    else {cbd3(&mut res, b)};
     res
 }
 
@@ -130,10 +130,10 @@ pub fn get_matrix(rho: &[u8]) -> Mat<K, K>
     {
         for j in 0..K 
         {
-            let mut tmp = [0u8; 32];
+            let mut tmp = [0u8; 1<<20];
             let mut seed = [0u8; 32+4];
             seed[..32].copy_from_slice(&rho[..32]);
-            seed[32..].copy_from_slice(&[j as u8, (j>>8) as u8]);
+            seed[32..34].copy_from_slice(&[j as u8, (j>>8) as u8]);
             seed[34..].copy_from_slice(&[i as u8, (i>>8) as u8]);
             xof(&seed, &mut tmp);
             A.vec[i].poly[j] = parse(&tmp);
@@ -147,7 +147,7 @@ pub fn get_noise(sigma: &[u8]) -> VecPoly<K>
     let mut s = VecPoly::<K>::default();
     for i in 0..K
     {
-        let mut tmp = [0u8; 32];
+        let mut tmp = [0u8; 64*ETA1];
         let mut seed = [0u8; 32+2];
         seed[..32].copy_from_slice(&sigma[..32]);
         seed[32..].copy_from_slice(&[i as u8, (i>>8) as u8]);
@@ -163,7 +163,7 @@ pub fn get_error(sigma: &[u8]) -> VecPoly<K>
     let mut s = VecPoly::<K>::default();
     for i in 0..K
     {
-        let mut tmp = [0u8; 32];
+        let mut tmp = [0u8; 64*ETA1];
         let mut seed = [0u8; 32+2];
         seed[..32].copy_from_slice(&sigma[..32]);
         seed[32..].copy_from_slice(&[(i+K) as u8, ((i+K)>>8) as u8]);

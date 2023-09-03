@@ -194,6 +194,7 @@ pub fn Ntt<const k: usize>(a: &VecPoly<{k}>) -> VecPoly<{k}>
     for i in 0..res.poly.len()
     {
         res.poly[i] = ntt(&a.poly[i]);
+        res.poly[i].ntt = true;
     }
     res
 }
@@ -300,7 +301,19 @@ pub fn c_addq(a: &Poly) -> Poly
     let mut res = Poly::default();
     for i in 0..N 
     {
-        res.coeff[i] = (cmod(a.coeff[i], Q as i16));
+        res.coeff[i] = cmod(a.coeff[i], Q as i16);
+    }
+    res.ntt = a.ntt;
+    res
+}
+
+pub fn _addq(a: &Poly) -> Poly
+{
+    let mut res = Poly::default();
+    for i in 0..N 
+    {
+        if a.coeff[i] < 0 {
+        res.coeff[i] = a.coeff[i] + (Q as i16);}
     }
     res.ntt = a.ntt;
     res
@@ -313,6 +326,16 @@ pub fn Caddq<const k: usize>(a: &VecPoly<k>) -> VecPoly<k>
     for i in 0..k 
     {
         res.poly[i] = c_addq(&a.poly[i]);
+    }
+    res
+}
+
+pub fn addq<const k: usize>(a: &VecPoly<k>) -> VecPoly<k>
+{
+    let mut res = VecPoly::<k>::default();
+    for i in 0..k 
+    {
+        res.poly[i] = _addq(&a.poly[i]);
     }
     res
 }
