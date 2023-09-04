@@ -95,7 +95,7 @@ pub fn encryption(pk: &[u8], m: &[u8], rc: &[u8]) -> [u8; CIPHERTEXTBYTES]
     let mut tmp = Compress(&u, Du as i16);
     Encode(&mut c, tmp, Du);
     let mut tmp = compress(&v, Dv as i16);
-    encode(&mut c[CIPHERTEXTBYTES/2..], tmp, Dv);
+    encode(&mut c[Du*K*N/8..], tmp, Dv);
 
     c
 }
