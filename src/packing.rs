@@ -27,7 +27,6 @@ pub fn encode(r: &mut [u8], a: Poly, l: usize)
   .zip(a.coeff.iter().copied())
   {
     slot.store_le(c as u16); // because the coeffs are supposed to be positive
-    println!("{}", c);
     assert_eq!(slot.load_le::<u16>(), c as u16); 
   }
 } 

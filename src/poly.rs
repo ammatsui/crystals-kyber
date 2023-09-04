@@ -187,6 +187,19 @@ impl<const k: usize, const l:usize> Default for Mat<{k}, {l}>
   }
 }
 
+pub fn transp<const k: usize>(A: &Mat<{k}, {k}>) -> Mat<{k}, {k}>
+{
+    let mut res = *A;//.copy();
+    for i in 0..k
+    {
+        for j in 0..k
+        {
+            res.vec[i].poly[j] = A.vec[j].poly[i];
+        }
+    }
+    res
+}
+
 
 pub fn Ntt<const k: usize>(a: &VecPoly<{k}>) -> VecPoly<{k}>
 {
@@ -307,14 +320,14 @@ pub fn c_addq(a: &Poly) -> Poly
     res
 }
 
-pub fn _addq(a: &Poly) -> Poly
+pub fn _modq(a: &Poly) -> Poly
 {
     let mut res = Poly::default();
     for i in 0..N 
     {
-        if a.coeff[i] < 0 {
-        res.coeff[i] = a.coeff[i] + (Q as i16);}
-        else {res.coeff[i] = a.coeff[i];}
+        res.coeff[i] = (a.coeff[i] + (2*Q as i16))%(Q as i16);
+        if res.coeff[i] < 0 {res.coeff[i] += Q as i16;}
+        
     }
     res.ntt = a.ntt;
     res
@@ -331,12 +344,12 @@ pub fn Caddq<const k: usize>(a: &VecPoly<k>) -> VecPoly<k>
     res
 }
 
-pub fn addq<const k: usize>(a: &VecPoly<k>) -> VecPoly<k>
+pub fn modq<const k: usize>(a: &VecPoly<k>) -> VecPoly<k>
 {
     let mut res = VecPoly::<k>::default();
     for i in 0..k 
     {
-        res.poly[i] = _addq(&a.poly[i]);
+        res.poly[i] = _modq(&a.poly[i]);
     }
     res
 }

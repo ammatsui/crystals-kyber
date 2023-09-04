@@ -24,14 +24,13 @@ pub fn keyGen() -> ([u8; PK_BYTES], [u8; SK_BYTES])
     s = Ntt(&s);
     e = Ntt(&e);
 
-    let mut t: VecPoly<K> = m_mult_v(&A, &Ntt(&s));
+    let mut t: VecPoly<K> = m_mult_v(&A, &s);
     t = v_add(&t, &e);
 
-    t = addq(&t);
-    s = addq(&s);
+    t = modq(&t);
+    s = modq(&s);
 
     pack_pk(&mut pk, &t, &rho);
-    println!("packed pk");
     pack_sk(&mut sk, &s);
 
     (pk, sk)
@@ -44,12 +43,10 @@ pub fn encryption(pk: &[u8], m: &[u8], rc: &[u8]) -> [u8; CIPHERTEXTBYTES]
     let mut t = VecPoly::<K>::default();
     let mut rho = [0u8; 32];
 
-
-
     unpack_pk(&pk, &mut t, &mut rho);
 
     let mut A = get_matrix(&mut rho);
-    // A = A.T (transpot)
+    A = transp(&A);
 
     let mut n = 0;
     let mut r = VecPoly::<K>::default();
@@ -82,7 +79,7 @@ pub fn encryption(pk: &[u8], m: &[u8], rc: &[u8]) -> [u8; CIPHERTEXTBYTES]
     let e2 = CBD(&tmp, ETA2);
 
     r = Ntt(&r);
-    let mut u = inv_Ntt(&m_mult_v(&A, &Ntt(&r)));
+    let mut u = inv_Ntt(&m_mult_v(&A, &r));
     u = v_add(&u, &e1);
 
     let mut v = inv_ntt(&v_mult_v(&t, &r)); 
@@ -93,7 +90,7 @@ pub fn encryption(pk: &[u8], m: &[u8], rc: &[u8]) -> [u8; CIPHERTEXTBYTES]
     tmp = decompress(&tmp, 1);
     
     add(&mut v, &tmp);
-
+    v = _modq(&v);
 
     let mut tmp = Compress(&u, Du as i16);
     Encode(&mut c, tmp, Du);
@@ -124,6 +121,7 @@ pub fn decryption(sk: &[u8], c: &[u8]) -> [u8; MESSAGEBYTES]
     let su = neg(&su);
     add(&mut v, &su);
 
+    v = _modq(&v);
     let tmp = compress(&v, 1);
     encode(&mut m, tmp, 1);
 

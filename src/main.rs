@@ -20,8 +20,6 @@ fn main()
 
     let mm = kex::decryption(&sk, &c);
 
-    println!("{:?}", m);
-    println!("{:?}", mm);
     assert_eq!(*m, mm);
 
   

@@ -47,14 +47,19 @@ pub fn parse(b: &[u8]) -> Poly
     let mut j: usize = 0;
     while j < N 
     {
-        let mut d: i16 = (b[i] as i16) + 256*(cmod(b[i+1] as i16, 16));
-        d = cmod(d, 1<<13);
-        if (d as usize) < 19*Q
+        let d1 = (b[i] as i16) + 256*(cmod(b[i+1] as i16, 16));
+        let d2 = (0.000001 + ((b[i+1]>>4) as f32).trunc()) as i16;
+        if d1 < (Q as i16)
         {
-            res.coeff[j] = d;
+            res.coeff[j] = d1;
             j += 1;
         }
-        i += 2;
+        if d2 < (Q as i16) && j < N
+        {
+            res.coeff[j] = d2;
+            j += 1;
+        }
+        i += 3;
     }
     res
 }
