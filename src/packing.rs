@@ -1,27 +1,12 @@
 use crate::{params::*, poly::*,};
 use bitvec::prelude::*;
 
-/* encode */
-// pub fn encode(r: &mut [u8], a: Poly) 
-// {
-//     let (mut t0, mut t1);
-
-//     for i in 0..(N / 2) {
-//         t0 = a.coeff[2 * i];
-//         t0 += (t0 >> 15) & Q as i16;
-//         t1 = a.coeff[2 * i + 1];
-//         t1 += (t1 >> 15) & Q as i16;
-//         r[3 * i + 0] = (t0 >> 0) as u8;
-//         r[3 * i + 1] = ((t0 >> 8) | (t1 << 4)) as u8;
-//         r[3 * i + 2] = (t1 >> 4) as u8;
-//     }
-// }
-
 
 /* the same as pack/unpack from dilithium */
+/* 256 coeff -> each into l bits -> glue together and get into 32*l bytes */
 pub fn encode(r: &mut [u8], a: Poly, l: usize)
 {
-    for (slot, c) in r
+    for (slot, c) in r[..32*l]
   .view_bits_mut::<Lsb0>()
   .chunks_mut(l)
   .zip(a.coeff.iter().copied())
@@ -31,24 +16,17 @@ pub fn encode(r: &mut [u8], a: Poly, l: usize)
   }
 } 
 
+
+/* array of 32*l bytes -> 256*l bits -> l bits into one coeff -> 256 coeff of a polynomial */
 pub fn decode(r: &mut Poly, a: &[u8], l: usize)
 {
-    let bits = a.view_bits::<Lsb0>();
+    let bits = a[..32*l].view_bits::<Lsb0>();
     for i in 0..N 
     {
-        r.coeff[i] = (bits[l*i..l*(i+1)]).load_le::<u16>() as i16;
+        r.coeff[i] = bits[l*i..l*(i+1)].load_le::<u16>() as i16;
     }
 }
 
-// /* decode */
-// pub fn decode(r: &mut Poly, a: &[u8]) {
-//     for i in 0..(N / 2) {
-//         r.coeff[2 * i + 0] =
-//             ((a[3 * i + 0] >> 0) as u16 | ((a[3 * i + 1] as u16) << 8) & 0xFFF) as i16;
-//         r.coeff[2 * i + 1] =
-//             ((a[3 * i + 1] >> 4) as u16 | ((a[3 * i + 2] as u16) << 4) & 0xFFF) as i16;
-//     }
-// }
 
 pub fn Encode(r: &mut [u8], a: VecPoly<K>, d: usize) 
 {

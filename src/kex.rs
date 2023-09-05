@@ -32,7 +32,16 @@ pub fn keyGen() -> ([u8; PK_BYTES], [u8; SK_BYTES])
 
     pack_pk(&mut pk, &t, &rho);
     pack_sk(&mut sk, &s);
-
+    
+    /* check */
+    let mut ssk = [0u8; SK_BYTES];
+    let mut ss = VecPoly::<K>::default();
+    unpack_sk(&sk, &mut ss);
+    assert_eq!(ss.poly[0].coeff, s.poly[0].coeff);
+  
+    pack_sk(&mut ssk, &ss);
+    assert_eq!(ssk, sk);
+    
     (pk, sk)
 }
 
