@@ -187,10 +187,10 @@ impl<const k: usize, const l:usize> Default for Mat<{k}, {l}>
   }
 }
 
-pub fn transp<const k: usize>(A: &Mat<{k}, {k}>) -> Mat<{k}, {k}>
+pub fn transp<const k: usize, const l: usize>(A: &Mat<{k}, {l}>) -> Mat<{l}, {k}>
 {
-    let mut res = *A;//.copy();
-    for i in 0..k
+    let mut res = Mat::<l, k>::default();
+    for i in 0..l
     {
         for j in 0..k
         {
@@ -198,6 +198,22 @@ pub fn transp<const k: usize>(A: &Mat<{k}, {k}>) -> Mat<{k}, {k}>
         }
     }
     res
+}
+
+pub fn b_reduce(a: &mut Poly)
+{
+    for i in 0..N 
+    {
+        a.coeff[i] = barrett(a.coeff[i]);
+    }
+}
+
+pub fn vb_reduce<const k: usize>(a: &mut VecPoly<{k}>) 
+{
+    for i in 0..k 
+    {
+        b_reduce(&mut a.poly[i]);
+    }
 }
 
 
@@ -306,6 +322,18 @@ pub fn m_mult_v<const k:usize, const l:usize>(A: &Mat<{k}, {l}>, s: &VecPoly<{l}
     }
     res
 }
+
+/* vector and matrix multiplication */
+pub fn v_mult_m<const k:usize, const l:usize>(s: &VecPoly<{k}>, A: &Mat<{k}, {l}>) -> VecPoly<{l}>
+{
+    let mut res = VecPoly::<{l}>::default();
+    for i in 0..l 
+    {
+        res.poly[i] = v_mult_v(&s, &transp(A).vec[i]);
+    }
+    res
+}
+
 
 
 /* utilities */
