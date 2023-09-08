@@ -18,7 +18,7 @@ fn main()
 
 
     let rc  = rand::thread_rng().gen::<[u8; 32]>();
-    let c = cpapke::encryption(&pk, m, &rc, &sk);
+    let c = cpapke::encryption(&pk, m, &rc);
 
     let mm = cpapke::decryption(&sk, &c);
 

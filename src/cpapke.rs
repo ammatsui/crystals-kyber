@@ -37,7 +37,7 @@ pub fn keyGen() -> ([u8; PK_BYTES], [u8; SK_BYTES])
 }
 
 
-pub fn encryption(pk: &[u8], m: &[u8], rc: &[u8], sk:&[u8]) -> [u8; CIPHERTEXTBYTES]
+pub fn encryption(pk: &[u8], m: &[u8], rc: &[u8]) -> [u8; CIPHERTEXTBYTES]
 {
     let mut c = [0u8; CIPHERTEXTBYTES];
     let mut t = VecPoly::<K>::default();
