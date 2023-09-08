@@ -325,8 +325,7 @@ pub fn _modq(a: &Poly) -> Poly
     let mut res = Poly::default();
     for i in 0..N 
     {
-        res.coeff[i] = (a.coeff[i] + (2*Q as i16))%(Q as i16);
-        if res.coeff[i] < 0 {res.coeff[i] += Q as i16;}
+        res.coeff[i] = mod_a(a.coeff[i], Q as i16);
         
     }
     res.ntt = a.ntt;

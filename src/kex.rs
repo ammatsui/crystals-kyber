@@ -33,20 +33,11 @@ pub fn keyGen() -> ([u8; PK_BYTES], [u8; SK_BYTES])
     pack_pk(&mut pk, &t, &rho);
     pack_sk(&mut sk, &s);
     
-    /* check */
-    let mut ssk = [0u8; SK_BYTES];
-    let mut ss = VecPoly::<K>::default();
-    unpack_sk(&sk, &mut ss);
-    assert_eq!(ss.poly[0].coeff, s.poly[0].coeff);
-  
-    pack_sk(&mut ssk, &ss);
-    assert_eq!(ssk, sk);
-    
     (pk, sk)
 }
 
 
-pub fn encryption(pk: &[u8], m: &[u8], rc: &[u8]) -> [u8; CIPHERTEXTBYTES]
+pub fn encryption(pk: &[u8], m: &[u8], rc: &[u8], sk:&[u8]) -> [u8; CIPHERTEXTBYTES]
 {
     let mut c = [0u8; CIPHERTEXTBYTES];
     let mut t = VecPoly::<K>::default();
@@ -102,9 +93,9 @@ pub fn encryption(pk: &[u8], m: &[u8], rc: &[u8]) -> [u8; CIPHERTEXTBYTES]
     v = _modq(&v);
 
     let mut tmp = Compress(&u, Du as i16);
-    Encode(&mut c, tmp, Du);
+    Encode(&mut c, &tmp, Du);
     let mut tmp = compress(&v, Dv as i16);
-    encode(&mut c[Du*K*N/8..], tmp, Dv);
+    encode(&mut c[Du*K*N/8..], &tmp, Dv);
 
     c
 }
@@ -115,7 +106,7 @@ pub fn decryption(sk: &[u8], c: &[u8]) -> [u8; MESSAGEBYTES]
     let mut m = [0u8; MESSAGEBYTES];
 
     let mut tmp = VecPoly::<K>::default();
-    Decode(&mut tmp, c, Du);
+    Decode(&mut tmp, &c, Du);
     let u = Decompress(&mut tmp, Du as i16);
 
     let mut tmp = Poly::default();
@@ -132,7 +123,7 @@ pub fn decryption(sk: &[u8], c: &[u8]) -> [u8; MESSAGEBYTES]
 
     v = _modq(&v);
     let tmp = compress(&v, 1);
-    encode(&mut m, tmp, 1);
+    encode(&mut m, &tmp, 1);
 
     m
 }

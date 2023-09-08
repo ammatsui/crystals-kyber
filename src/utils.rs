@@ -40,16 +40,23 @@ pub fn cmod(r : i16, a: i16) -> i16
     n 
 }
 
+pub fn mod_a(x: i16, a: i16) -> i16
+{
+    return (x%a + a) % a;
+}
+
 pub fn _compress(x: i16, d: i16) -> i16
 {
-    let tmp: f32 = ((x<<d) as f32)/(Q as f32);
-    let tmp: i16 = (0.000001 + tmp.ceil()) as i16;
-    return (((1<<(d as i32))+tmp as i32)%((1<<(d as i32))) ) as i16;
+    let x = mod_a(x, Q as i16) as i32;
+    let tmp: f32 = ((x<<(d as i32)) as f32)/(Q as f32);
+    let tmp: i16 = tmp.round() as i16;
+    return mod_a(tmp, 1<<d) as i16;
 }
 
 pub fn _decompress(x: i16, d: i16) -> i16
 {
-    let tmp: f32 = (((x as f32)*(Q as f32))/((1<<d) as f32)) as f32;
-    return (0.000001+tmp).ceil() as i16
+    let x = mod_a(x, Q as i16) as i32;
+    let tmp: f32 = ((x as f32)*(Q as f32))/((1<<(d as i32)) as f32);
+    return tmp.round() as i16 
 }
 
