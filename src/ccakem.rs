@@ -62,40 +62,40 @@ pub fn decapsulation(sk: &[u8], c: &[u8]) -> [u8; SHAREDKEY]
     let mut pk = [0u8; KEMPK_BYTES];
     pk[..KEMPK_BYTES].copy_from_slice(&sk[SK_BYTES..PK_BYTES]);
 
-    let mut h = [0u8; 64];
-    h[..64].copy_from_slice(&sk[PK_BYTES+SK_BYTES..64]);
+    let mut h = [0u8; SYMBYTES];
+    h[..SYMBYTES].copy_from_slice(&sk[PK_BYTES+SK_BYTES..SYMBYTES]);
 
-    let mut z = [0u8; 32];
-    z[..32].copy_from_slice(&sk[PK_BYTES+SK_BYTES+64..]);
+    let mut z = [0u8; SEEDBYTES];
+    z[..SEEDBYTES].copy_from_slice(&sk[PK_BYTES+SK_BYTES+SYMBYTES..]);
 
     let mp = crate::cpapke::decryption(&sk, &c);
 
-    let mut seed = [0u8; 64+64]; //m+h
-    seed[..64].copy_from_slice(&mp);
-    seed[64..].copy_from_slice(&h);
+    let mut seed = [0u8; SEEDBYTES+SYMBYTES]; 
+    seed[..SEEDBYTES].copy_from_slice(&mp);
+    seed[SEEDBYTES..].copy_from_slice(&h);
     
-    let mut res = [0u8; 64];
+    let mut res = [0u8; SYMBYTES];
     G(&seed, &mut res);
-    let (mut shkp, r) = res.split_at(32);
+    let (mut shkp, r) = res.split_at(SEEDBYTES);
 
     let cp = crate::cpapke::encryption(&pk, &mp, &r);
 
-    let mut hc = [0u8; 64];
+    let mut hc = [0u8; SYMBYTES];
     H(&c, &mut hc);
 
-    let mut shk = [0u8; 32];
+    let mut shk = [0u8; SEEDBYTES];
     if c == cp 
     {
-        let mut seed = [0u8; 32+64]; //m+h
-        seed[..32].copy_from_slice(&shkp);
-        seed[32..].copy_from_slice(&hc);
+        let mut seed = [0u8; SEEDBYTES+SYMBYTES]; 
+        seed[..SEEDBYTES].copy_from_slice(&shkp);
+        seed[SEEDBYTES..].copy_from_slice(&hc);
         kdf(&seed, &mut shk);
     }
     else  
     { 
-        let mut seed = [0u8; 32+64]; //m+h
-        seed[..32].copy_from_slice(&z);
-        seed[32..].copy_from_slice(&hc);
+        let mut seed = [0u8; SEEDBYTES+SYMBYTES]; 
+        seed[..SEEDBYTES].copy_from_slice(&z);
+        seed[SEEDBYTES..].copy_from_slice(&hc);
         kdf(&seed, &mut shk);
     }
     shk

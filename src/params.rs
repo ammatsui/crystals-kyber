@@ -13,47 +13,25 @@ pub use mode768::*;
 pub use mode1024::*;
 
 
-
-pub const MESSAGEBYTES: usize = 32; //max size of the message
-
-
 pub const Q: usize = 3329; 
 pub const N: usize = 256;
 
+pub const MESSAGEBYTES: usize = 32; 
+pub const CIPHERTEXTBYTES: usize = Du*K*N/8 + Dv*N/8;
 
-pub const KYBER_SYMBYTES: usize = 32;
+
+pub const SYMBYTES: usize = 64;
 pub const SEEDBYTES: usize = 32;
 pub const PACKED_KEYS: usize = 12; 
 
-/// Size of the shared key
-pub const KYBER_SSBYTES: usize = 32;
-
-pub const KYBER_POLYBYTES: usize = 384;
-pub const KYBER_POLYVECBYTES: usize = K * KYBER_POLYBYTES;
-
-#[cfg(not(feature = "kyber1024"))]
-pub const KYBER_POLYCOMPRESSEDBYTES: usize = 128;
-#[cfg(not(feature = "kyber1024"))]
-pub const KYBER_POLYVECCOMPRESSEDBYTES: usize = K * 320;
-
-#[cfg(feature = "kyber1024")]
-pub const KYBER_POLYCOMPRESSEDBYTES: usize = 160;
-#[cfg(feature = "kyber1024")]
-pub const KYBER_POLYVECCOMPRESSEDBYTES: usize = K * 352;
-
-pub const KYBER_INDCPA_PUBLICKEYBYTES: usize = KYBER_POLYVECBYTES + KYBER_SYMBYTES;
-pub const KYBER_INDCPA_SECRETKEYBYTES: usize = KYBER_POLYVECBYTES;
-pub const KYBER_INDCPA_BYTES: usize = KYBER_POLYVECCOMPRESSEDBYTES + KYBER_POLYCOMPRESSEDBYTES;
-
-/// Size in bytes of the Kyber public key
-pub const PK_BYTES: usize = PACKED_KEYS*K*N/8 + SEEDBYTES;//KYBER_INDCPA_PUBLICKEYBYTES;
-/// Size in bytes of the Kyber secret key
-pub const SK_BYTES: usize = PACKED_KEYS*K*N/8;
-  //  KYBER_INDCPA_SECRETKEYBYTES + KYBER_INDCPA_PUBLICKEYBYTES + 2 * KYBER_SYMBYTES;
-/// Size in bytes of the Kyber ciphertext
-pub const CIPHERTEXTBYTES: usize = KYBER_INDCPA_BYTES;
-
-pub const KEMSK_BYTES: usize = 2*PACKED_KEYS*K*N/8 + 96;
-pub const KEMPK_BYTES: usize = PACKED_KEYS*K*N/8 + 32;
-
+/* shared key */
 pub const SHAREDKEY: usize = 32;
+
+/* Kyber public key */
+pub const PK_BYTES: usize = PACKED_KEYS*K*N/8 + SEEDBYTES;
+/* Kyber secret key */
+pub const SK_BYTES: usize = PACKED_KEYS*K*N/8;
+
+/* encapsulation sizes */
+pub const KEMSK_BYTES: usize = 2*PACKED_KEYS*K*N/8 + SEEDBYTES + SYMBYTES;
+pub const KEMPK_BYTES: usize = PACKED_KEYS*K*N/8 + SEEDBYTES;

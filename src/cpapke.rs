@@ -8,12 +8,12 @@ pub fn keyGen() -> ([u8; PK_BYTES], [u8; SK_BYTES])
     let mut sk = [0u8; SK_BYTES];
     let mut pk = [0u8; PK_BYTES];
 
-    let d  = rand::thread_rng().gen::<[u8; 32]>();
+    let d  = rand::thread_rng().gen::<[u8; SEEDBYTES]>();
     
 
-    let mut tmp = [0u8; 64];
+    let mut tmp = [0u8; 2*SEEDBYTES];
     G(&d, &mut tmp);
-    let (rho, sigma) = tmp.split_at(32);
+    let (rho, sigma) = tmp.split_at(SEEDBYTES);
    
 
     let A = get_matrix(&rho);
@@ -40,7 +40,7 @@ pub fn encryption(pk: &[u8], m: &[u8], rc: &[u8]) -> [u8; CIPHERTEXTBYTES]
 {
     let mut c = [0u8; CIPHERTEXTBYTES];
     let mut t = VecPoly::<K>::default();
-    let mut rho = [0u8; 32];
+    let mut rho = [0u8; SEEDBYTES];
 
     unpack_pk(&pk, &mut t, &mut rho);
 
@@ -51,10 +51,10 @@ pub fn encryption(pk: &[u8], m: &[u8], rc: &[u8]) -> [u8; CIPHERTEXTBYTES]
     let mut r = VecPoly::<K>::default();
     for i in 0..K
     {
-        let mut tmp = [0u8; 64*ETA1];
-        let mut seed = [0u8; 32+2];
-        seed[..32].copy_from_slice(&rc[..32]);
-        seed[32..].copy_from_slice(&[n as u8, (n>>8) as u8]);
+        let mut tmp = [0u8; 2*SEEDBYTES*ETA1];
+        let mut seed = [0u8; SEEDBYTES+2];
+        seed[..SEEDBYTES].copy_from_slice(&rc[..SEEDBYTES]);
+        seed[SEEDBYTES..].copy_from_slice(&[n as u8, (n>>8) as u8]);
         prf(&seed, &mut tmp);
         r.poly[i] = CBD(&tmp, ETA1);
         n+=1;
@@ -63,19 +63,19 @@ pub fn encryption(pk: &[u8], m: &[u8], rc: &[u8]) -> [u8; CIPHERTEXTBYTES]
     let mut e1 = VecPoly::<K>::default();
     for i in 0..K
     {
-        let mut tmp = [0u8; 64*ETA2];
-        let mut seed = [0u8; 32+2];
-        seed[..32].copy_from_slice(&rc[..32]);
-        seed[32..].copy_from_slice(&[n as u8, (n>>8) as u8]);
+        let mut tmp = [0u8; 2*SEEDBYTES*ETA2];
+        let mut seed = [0u8; SEEDBYTES+2];
+        seed[..SEEDBYTES].copy_from_slice(&rc[..SEEDBYTES]);
+        seed[SEEDBYTES..].copy_from_slice(&[n as u8, (n>>8) as u8]);
         prf(&seed, &mut tmp);
         e1.poly[i] = CBD(&tmp, ETA2);
         n+=1;
     }
     
-    let mut tmp = [0u8; 64*ETA2];
-    let mut seed = [0u8; 32+2];
-    seed[..32].copy_from_slice(&rc[..32]);
-    seed[32..].copy_from_slice(&[n as u8, (n>>8) as u8]);
+    let mut tmp = [0u8; 2*SEEDBYTES*ETA2];
+    let mut seed = [0u8; SEEDBYTES+2];
+    seed[..SEEDBYTES].copy_from_slice(&rc[..SEEDBYTES]);
+    seed[SEEDBYTES..].copy_from_slice(&[n as u8, (n>>8) as u8]);
     prf(&seed, &mut tmp);
     let e2 = CBD(&tmp, ETA2);
     
