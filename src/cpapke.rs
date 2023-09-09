@@ -10,12 +10,11 @@ pub fn keyGen() -> ([u8; PK_BYTES], [u8; SK_BYTES])
 
     let d  = rand::thread_rng().gen::<[u8; 32]>();
     
-    let (mut rho, mut sigma) = ([0u8; 32], [0u8; 32]);
 
     let mut tmp = [0u8; 64];
     G(&d, &mut tmp);
-    rho.copy_from_slice(&tmp[..32]);
-    sigma.copy_from_slice(&tmp[32..]);
+    let (rho, sigma) = tmp.split_at(32);
+   
 
     let A = get_matrix(&rho);
     let mut s = get_noise(&sigma);
@@ -46,6 +45,7 @@ pub fn encryption(pk: &[u8], m: &[u8], rc: &[u8]) -> [u8; CIPHERTEXTBYTES]
     unpack_pk(&pk, &mut t, &mut rho);
 
     let mut A = get_matrix(&mut rho);
+    
 
     let mut n = 0;
     let mut r = VecPoly::<K>::default();
@@ -59,6 +59,7 @@ pub fn encryption(pk: &[u8], m: &[u8], rc: &[u8]) -> [u8; CIPHERTEXTBYTES]
         r.poly[i] = CBD(&tmp, ETA1);
         n+=1;
     }
+    
     let mut e1 = VecPoly::<K>::default();
     for i in 0..K
     {
@@ -70,22 +71,22 @@ pub fn encryption(pk: &[u8], m: &[u8], rc: &[u8]) -> [u8; CIPHERTEXTBYTES]
         e1.poly[i] = CBD(&tmp, ETA2);
         n+=1;
     }
+    
     let mut tmp = [0u8; 64*ETA2];
     let mut seed = [0u8; 32+2];
     seed[..32].copy_from_slice(&rc[..32]);
     seed[32..].copy_from_slice(&[n as u8, (n>>8) as u8]);
     prf(&seed, &mut tmp);
     let e2 = CBD(&tmp, ETA2);
-
+    
     /* Atr = rA */
     r = Ntt(&r);
     let mut u = inv_Ntt(&v_mult_m(&r, &A));
     u = v_add(&u, &e1);
-    //vb_reduce(&mut u);
+    u = modq(&u);
 
     let mut v = inv_ntt(&v_mult_v(&r, &t)); 
     add(&mut v, &e2);
-    //b_reduce(&mut v);
 
     let mut tmp = Poly::default();
     decode(&mut tmp, m, 1);
@@ -93,7 +94,7 @@ pub fn encryption(pk: &[u8], m: &[u8], rc: &[u8]) -> [u8; CIPHERTEXTBYTES]
     
     add(&mut v, &tmp);
     v = _modq(&v);
-    //b_reduce(&mut v);
+    
     
     let mut tmp = Compress(&u, Du as i16);
     Encode(&mut c, &tmp, Du);
@@ -109,7 +110,7 @@ pub fn decryption(sk: &[u8], c: &[u8]) -> [u8; MESSAGEBYTES]
     let mut m = [0u8; MESSAGEBYTES];
 
     let mut tmp = VecPoly::<K>::default();
-    Decode(&mut tmp, &c, Du);
+    Decode(&mut tmp, &c[..Du*K*N/8], Du);
     let u = Decompress(&mut tmp, Du as i16);
 
     let mut tmp = Poly::default();
@@ -123,7 +124,6 @@ pub fn decryption(sk: &[u8], c: &[u8]) -> [u8; MESSAGEBYTES]
     let us = inv_ntt(&v_mult_v(&Ntt(&u),&s));
     let us = neg(&us);
     add(&mut v, &us);
-   //b_reduce(&mut v);
 
     v = _modq(&v);
     let tmp = compress(&v, 1);

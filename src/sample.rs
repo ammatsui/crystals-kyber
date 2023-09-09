@@ -47,8 +47,8 @@ pub fn parse(b: &[u8]) -> Poly
     let mut j: usize = 0;
     while j < N 
     {
-        let d1 = (b[i] as i16) + 256*(cmod(b[i+1] as i16, 16));
-        let d2 = (0.000001 + ((b[i+1]>>4) as f32).trunc()) as i16;
+        let d1 = (b[i] as i16) + 256*(mod_a(b[i+1] as i16, 16));
+        let d2 = ((b[i+1] as f32)/((1<<4) as f32)).round()as i16;
         if d1 < (Q as i16)
         {
             res.coeff[j] = d1;
@@ -142,6 +142,7 @@ pub fn get_matrix(rho: &[u8]) -> Mat<K, K>
             seed[34..].copy_from_slice(&[i as u8, (i>>8) as u8]);
             xof(&seed, &mut tmp);
             A.vec[i].poly[j] = parse(&tmp);
+           
         }
     }
     A

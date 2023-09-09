@@ -42,6 +42,7 @@ pub fn cmod(r : i16, a: i16) -> i16
 
 pub fn mod_a(x: i16, a: i16) -> i16
 {
+    assert!((x%a + a) % a >= 0);
     return (x%a + a) % a;
 }
 
