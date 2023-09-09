@@ -24,5 +24,11 @@ fn main()
 
     assert_eq!(*m, mm);
 
-  
+    let (pk, sk) = ccakem::keyGen();
+
+    let (c, shk) = ccakem::encapsulation(&pk);
+
+    let shkp = ccakem::decapsulation(&sk, &c);
+
+    assert_eq!(shkp, shk);
 }

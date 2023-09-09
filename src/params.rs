@@ -20,7 +20,7 @@ pub const MESSAGEBYTES: usize = 32;
 pub const CIPHERTEXTBYTES: usize = Du*K*N/8 + Dv*N/8;
 
 
-pub const SYMBYTES: usize = 64;
+pub const SYMBYTES: usize = 32; //64
 pub const SEEDBYTES: usize = 32;
 pub const PACKED_KEYS: usize = 12; 
 
@@ -33,5 +33,5 @@ pub const PK_BYTES: usize = PACKED_KEYS*K*N/8 + SEEDBYTES;
 pub const SK_BYTES: usize = PACKED_KEYS*K*N/8;
 
 /* encapsulation sizes */
-pub const KEMSK_BYTES: usize = 2*PACKED_KEYS*K*N/8 + SEEDBYTES + SYMBYTES;
-pub const KEMPK_BYTES: usize = PACKED_KEYS*K*N/8 + SEEDBYTES;
+pub const KEMSK_BYTES: usize = PK_BYTES+SK_BYTES+SEEDBYTES+SYMBYTES;//2*PACKED_KEYS*K*N/8 + SEEDBYTES + SYMBYTES;
+pub const KEMPK_BYTES: usize = PK_BYTES;//PACKED_KEYS*K*N/8 + SEEDBYTES;
