@@ -2,7 +2,7 @@
 use crate::params::*;
 /* helper functions from the paper, bits and hints */
 
-const Q_INV: i32 = 3327;//62209; // q^(-1) mod 2^16
+const Q_INV: i32 = 62209;//3327;//62209; // q^(-1) mod 2^16
 
 
 /* for finite field element a with -2^{15}Q <= a <= Q*2^15,

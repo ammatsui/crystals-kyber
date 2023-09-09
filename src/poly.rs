@@ -55,11 +55,12 @@ pub fn ntt(a: &Poly) -> Poly
     res
 }
 
-pub fn reduce(a: &mut Poly)// -> i32
+pub fn reduce(a: &mut Poly)
 {
     for i in 0..N 
     {
         a.coeff[i] = cmod(montgomery(a.coeff[i] as i32), Q as i16);
+       // a.coeff[i] = a.coeff[i]>>16;
     }
 }
 
@@ -73,7 +74,7 @@ pub fn inv_ntt(a: &Poly) -> Poly
         reduce(&mut res);
         res.ntt = false;
     }
-    res
+    _modq(&res)
 }
 
 /* scalar multiplication */
