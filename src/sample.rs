@@ -38,6 +38,17 @@ pub fn prf(seed: &[u8], out: &mut [u8])
     reader.read(out);
 }
 
+pub fn kdf(seed: &[u8], out: &mut [u8])
+{
+    use sha3::digest::{Update, ExtendableOutput, XofReader};
+
+    let mut hasher = Shake256::default();
+    hasher.update(&seed);
+    let mut reader = hasher.finalize_xof();
+    reader.read(out);
+}
+
+
 
 pub fn parse(b: &[u8]) -> Poly
 {

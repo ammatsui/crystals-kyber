@@ -52,3 +52,8 @@ pub const SK_BYTES: usize = PACKED_KEYS*K*N/8;
   //  KYBER_INDCPA_SECRETKEYBYTES + KYBER_INDCPA_PUBLICKEYBYTES + 2 * KYBER_SYMBYTES;
 /// Size in bytes of the Kyber ciphertext
 pub const CIPHERTEXTBYTES: usize = KYBER_INDCPA_BYTES;
+
+pub const KEMSK_BYTES: usize = 2*PACKED_KEYS*K*N/8 + 96;
+pub const KEMPK_BYTES: usize = PACKED_KEYS*K*N/8 + 32;
+
+pub const SHAREDKEY: usize = 32;
